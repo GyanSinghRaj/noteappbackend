@@ -1,18 +1,10 @@
-// const express=require('express');
-// const router=express.Router();
-// const authContorller=require('../controllers/authController');
-
-// //Define routes with authentication middleware
-
-// router.post('/register',authContorller.register);
-// router.post('/login',authContorller.login);
-
-// module.exports=router;
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const auth = require('../middleware/auth');
+
+
 
 // Register
 router.post('/register', async (req, res) => {
@@ -38,6 +30,23 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Route to get user profile
+router.get('/userProfile',auth, async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid user data' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) throw new Error('User not found');
+
+    const { username, email, _id } = user;
+    res.json({ username, email, _id });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

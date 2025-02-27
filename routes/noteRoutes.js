@@ -1,34 +1,7 @@
-// const express = require('express');
-// const router = express.Router();
-// const noteController = require('../controllers/notecontroller');
-// const authMiddleware = require('../middleware/authMiddleware'); // Adjust the path as necessary
-
-// // Define routes with authentication middleware
-// router.post('/notes', authMiddleware, noteController.createNote);
-// router.get('/notes',  noteController.getNotes);
-// router.put('/notes/:id',  noteController.updateNote);
-// router.delete('/notes/:id',  noteController.deleteNote);
-
-// module.exports = router;
 const express = require('express');
 const router = express.Router();
 const Note = require('../models/note');
-const jwt = require('jsonwebtoken');
-
-// Middleware to authenticate user
-const auth = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-};
-
+const auth=require('../middleware/auth')
 // Get Notes
 router.get('/', auth, async (req, res) => {
   try {
@@ -50,7 +23,7 @@ router.post('/', auth, async (req, res) => {
     });
     await note.save();
     res.status(201).json(note);
-  } catch (error) {
+  } catch (error) {sud
     res.status(400).json({ error: error.message });
   }
 });
